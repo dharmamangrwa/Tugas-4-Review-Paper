@@ -1,0 +1,209 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{datetime2}
+\usepackage{xparse}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+
+
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+
+ 
+ \usepackage{graphicx}
+ \usepackage{titling}
+
+ \title{Tugas 4 Review Paper : Optimization of Fault Identification and Location Using Adaptive Neuro-Fuzzy Inference System and Support Vector Machine for an AC Microgrid
+}
+% \author{Muhammad Qomaruz Zaman}
+\date{05 April 2026}
+ 
+ \usepackage{fancyhdr}
+\fancypagestyle{plain}{%  the preset of fancyhdr 
+    \fancyhf{} % clear all header and footer fields
+    \fancyfoot[R]{}
+    \fancyfoot[L]{}
+    \fancyhead[L]{\includegraphics[width=2cm]{ITS_pojok.pdf}}
+    \fancyhead[R]{ \DTMnow}
+}
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \null
+  \vskip 1em%
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE \@title \par}%
+    \vskip 1em%
+    %{\large \@date}%
+  \end{center}%
+  \par
+  \vskip 1em}
+\makeatother
+
+\usepackage{lipsum}  
+% \usepackage{cmbright} % Change the font by zee
+
+\begin{document}
+
+\maketitle
+
+
+\noindent\begin{tabular}{@{}ll}
+    Author(s): & Irwansyah Indra Prayoga\\
+     Teacher: &  Muhammad Qomaruz Zaman, S.T., M.T., Ph.D.\\
+     Class name: & Kecerdasan Buatan (X)\\
+     YouTube video link: & \url{https://youtu.be/XnGeqjbIusw?si=C58i2F8sJz37gfQx} \\
+     GitHub link: & \url{https://github.com/dharmamangrwa/Tugas-4-Review-Paper.git}
+\end{tabular}
+\vspace{2cm}
+
+
+\begin{abstract}
+Artikel jurnal ini mengevaluasi secara mendalam pendekatan hibrida berbasis \textit{machine learning} untuk identifikasi dan lokasi fault pada sistem AC Microgrid (MG). Penulis asli mengusulkan Adaptive Neuro-Fuzzy Inference System (ANFIS) untuk Fault Identification System (FIS) dan Support Vector Machine (SVM) untuk Fault Location System (FLS) pada model IEEE 12-Bus AC Microgrid. Pendekatan ini diuji pada dua mode operasi: islanded dan grid-connected. Hasil menunjukkan waktu eksekusi sangat rendah (0,00202 detik pada mode islanded dan 0,0022 detik pada mode grid-connected) serta persentase error minimal (maksimum 0,167\% pada islanded dan 0,183\% pada grid-connected). Tinjauan ini menganalisis kekuatan, kelemahan, kontribusi ilmiah, serta implikasi praktis dan arah penelitian masa depan dari karya tersebut. Dengan pendekatan yang detail dan berbasis data, paper ini memberikan solusi real-time yang efisien untuk proteksi microgrid berbasis renewable energy sources (RES).
+\end{abstract}
+
+\section{Pendahuluan}
+Integrasi Renewable Energy Sources (RES) ke dalam jaringan distribusi modern telah mengubah karakteristik arus fault secara signifikan. Arus fault yang rendah, \textit{high-impedance faults}, serta keterlambatan komunikasi menjadi tantangan utama dalam identifikasi dan lokasi fault pada AC Microgrid. Metode konvensional (traveling-wave dan impedance-based) sering gagal karena sifat bidirectional power flow dan dinamika operasi islanded/grid-connected.
+
+Kurmaiah dan Vaithilingam (2025) mengusulkan solusi berbasis \textit{machine learning} yang menghilangkan tahap pre-processing sinyal yang rumit. Pendekatan mereka menggabungkan ANFIS untuk klasifikasi tipe fault dan SVM untuk estimasi lokasi fault secara akurat. Tinjauan ini bertujuan untuk:
+\begin{itemize}
+    \item Merangkum metodologi dan hasil secara lengkap,
+    \item Menganalisis keunggulan teknis dan keterbatasan,
+    \item Membandingkan dengan studi terkini,
+    \item Memberikan rekomendasi untuk pengembangan lebih lanjut.
+\end{itemize}
+
+\section{Ringkasan Metodologi Penelitian Asli}
+
+\subsection{Sistem Uji (IEEE 12-Bus AC Microgrid)}
+Penelitian dilakukan pada model IEEE 12-Bus AC Microgrid yang terdiri dari tiga grid sources (G1--G3) dan tiga distributed generators (DG1--DG3) yang beroperasi pada 50\,Hz dan tegangan 420\,V. Parameter sistem disajikan pada Tabel~\ref{tab:parameter}.
+
+\begin{table}[htbp]
+\centering
+\caption{Parameter Sistem IEEE 12-Bus AC Microgrid (diadaptasi dari paper asli)}
+\label{tab:parameter}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{S. No} & \textbf{Komponen} & \textbf{Parameter} \\
+\midrule
+1 & Grid Sources (G1, G2, G3) & Line Voltage 420\,V (11\,kV/0.42\,kV transformer), \\
+   &                            & $r = 0.8929\,\Omega$, $L = 16.58\,\text{mH}$ \\
+2 & Distributed Generators (DG1--DG3) & Sama dengan grid sources \\
+3 & Feeder & Panjang 21.200\,km, $r_1 = 2.41\,\Omega/\text{km}$, $r_0 = 5\times10^{-4}\,\Omega/\text{km}$ \\
+   &        & $L_1 = 3.87\times10^{-6}\,\text{H/km}$, $L_0 = 11.6092\times10^{-6}\,\text{H/km}$ \\
+4 & Beban & Load1: $P=30\,\text{kW}$, $Q=4\,\text{kVAR}$; Load2: $P=40\,\text{kW}$, $Q=5\,\text{kVAR}$; Load3: $P=20\,\text{kW}$, $Q=2\,\text{kVAR}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pemrosesan Data dan Fitur Input}
+Data diambil langsung dari pengukuran RMS tegangan dan arus tiga-fasa pada enam bus sumber (36 fitur input). Jumlah kasus simulasi mencapai 124.416. Rumus RMS yang digunakan adalah:
+
+\begin{equation}
+V_{cM} = \sqrt{\frac{1}{T} \int_{0}^{T} v^2(t)\, dt}, \qquad
+I_{cM} = \sqrt{\frac{1}{T} \int_{0}^{T} i^2(t)\, dt}
+\end{equation}
+
+Deviasi RMS dihitung dengan:
+
+\begin{equation}
+\Delta V_c(g) = \frac{1}{p} \sum_{i=1}^{p} \left( V_c(g, y_i) - V_{cM} \right), \qquad
+\Delta I_c(g) = \frac{1}{p} \sum_{i=1}^{p} \left( I_c(g, y_i) - I_{cM} \right)
+\end{equation}
+
+Data dinormalisasi menggunakan:
+
+\begin{equation}
+c' = \frac{c - \text{mean}(c)}{\text{standard-deviation}(c)}
+\end{equation}
+
+\subsection{Algoritma ANFIS untuk Fault Identification}
+ANFIS menggabungkan fuzzy logic dan neural network dengan lima lapisan utama. Model ini dilatih dengan hybrid learning (gradient descent + least squares) untuk mengklasifikasikan tipe fault (LG, LL, LLG, LLL, LLLG) dan line fault (1--6).
+
+\subsection{Algoritma SVM untuk Fault Location}
+SVM membangun hyperplane optimal dengan maksimal margin. Fungsi keputusan:
+
+\begin{equation}
+\text{sgn} \left( \sum v_i u_i + \eta \right)
+\end{equation}
+
+dengan kernel RBF untuk data non-linear.
+
+\section{Hasil dan Analisis Kinerja}
+
+\subsection{Mode Islanded}
+Waktu eksekusi SVM: \textbf{0,00202 detik}. Persentase error: minimum 0,021\% -- maksimum 0,167\% (jauh lebih rendah dibanding GRNN, NN, GPR, DT, BT, Ensemble).
+
+\subsection{Mode Grid-Connected}
+Waktu eksekusi SVM: \textbf{0,0022 detik}. Persentase error: minimum 0,00\% -- maksimum 0,183\%.
+
+\subsection{Perbandingan dengan Penelitian Terkini}
+Perbandingan ditunjukkan pada Tabel~\ref{tab:comparison}.
+
+\begin{table}[htbp]
+\centering
+\caption{Perbandingan dengan State-of-the-Art (diadaptasi dari paper asli)}
+\label{tab:comparison}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{No} & \textbf{Referensi} & \textbf{Metode} & \textbf{Waktu Eksekusi (s)} & \textbf{\% Error Maks.} \\
+\midrule
+1 & [1]  & ML tie-parameter & Tidak dihitung & 0,5\% \\
+2 & [18] & GPR + Ensemble   & 5,5425 -- 38,634 & 0,86\% \\
+8 & \textbf{Proposed} & \textbf{ANFIS + SVM} & \textbf{0,00202 / 0,0022} & \textbf{0,167\% / 0,183\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Model yang diusulkan memiliki waktu eksekusi \textbf{ribuan kali lebih cepat} dan error yang lebih rendah.
+
+\section{Kelebihan dan Keterbatasan}
+
+\textbf{Kelebihan:}
+\begin{itemize}
+    \item Eliminasi tahap signal processing $\rightarrow$ mengurangi komputasi dan latency.
+    \item Input langsung RMS voltage/current $\rightarrow$ cocok untuk real-time.
+    \item Hybrid ANFIS--SVM memberikan spesialisasi.
+    \item Diuji pada kedua mode operasi microgrid.
+    \item Waktu eksekusi $< 3$\,ms $\rightarrow$ memenuhi standar proteksi relai digital.
+\end{itemize}
+
+\textbf{Keterbatasan:}
+\begin{itemize}
+    \item Hanya diuji pada IEEE 12-Bus.
+    \item Belum mempertimbangkan harmonik ekstrem atau noise sensor.
+    \item Dataset simulasi belum divalidasi hardware-in-the-loop.
+    \item Tidak membahas cybersecurity atau IEC 61850.
+\end{itemize}
+
+\section{Implikasi Praktis dan Arah Penelitian Masa Depan}
+Pendekatan ini sangat relevan untuk microgrid berbasis RES di Indonesia. Rekomendasi penelitian lanjutan:
+\begin{enumerate}
+    \item Validasi real-time pada hardware (OPAL-RT atau RTDS).
+    \item Integrasi dengan IEC 61850 dan 5G.
+    \item Ekstensi ke IEEE 34-Bus atau 123-Bus.
+    \item Penambahan modul deteksi cyber-attack.
+    \item Optimasi hyperparameter dengan metaheuristic (PSO, GWO).
+\end{enumerate}
+
+\section{Kesimpulan}
+Karya Kurmaiah dan Vaithilingam (2025) merupakan kontribusi signifikan dalam domain proteksi AC Microgrid. Kombinasi ANFIS dan SVM berhasil mengatasi tantangan fault current rendah dan high-impedance faults dengan akurasi tinggi serta waktu eksekusi ultra-cepat. Pendekatan ini membuka jalan bagi implementasi proteksi adaptif berbasis AI yang andal, efisien, dan siap diterapkan pada sistem microgrid modern di era transisi energi.
+
+\begin{thebibliography}{10}
+\bibitem{kurmaiah2025} Kurmaiah, A., \& Vaithilingam, C. (2025). Optimization of Fault Identification and Location Using Adaptive Neuro-Fuzzy Inference System and Support Vector Machine for an AC Microgrid. \textit{IEEE Access}, 13, 20599--20617.
+
+\bibitem{srivastava2022} Srivastava, A., \& Parida, S.K. (2022). Gaussian Process Regression-Based Fault Locator for Distribution Networks. \textit{IEEE Transactions on Power Delivery}.
+
+\end{thebibliography}
+
+
+
+\end{document}
